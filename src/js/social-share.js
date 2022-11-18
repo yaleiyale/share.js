@@ -11,19 +11,19 @@
  * // or
  *
  * socialShare('.share-bar', {
- *     sites: ['qzone', 'qq', 'weibo','wechat'],
+ *     sites: ['qq', 'weibo','weixin'],
  *     // ...
  * });
  * </pre>
  */
-;(function (window, document, undefined) {
+; (function (window, document, undefined) {
 
     // Initialize a variables.
 
     var Array$indexOf = Array.prototype.indexOf;
     var Object$assign = Object.assign;
 
-    var runningInWeChat = /MicroMessenger/i.test(navigator.userAgent);
+    var runningInweixin = /MicroMessenger/i.test(navigator.userAgent);
     var isMobileScreen = document.documentElement.clientWidth <= 768;
 
     var image = (document.images[0] || 0).src || '';
@@ -42,26 +42,22 @@
 
         weiboKey: '',
 
-        wechatQrcodeTitle: '微信扫一扫：分享',
-        wechatQrcodeHelper: '<p>微信里点“发现”，扫一下</p><p>二维码便可将本文分享至朋友圈。</p>',
-        wechatQrcodeSize: 100,
+        weixinQrcodeTitle: '微信扫一扫：分享',
+        weixinQrcodeHelper: '<p>微信里点“发现”，扫一下</p><p>二维码便可将本文分享至朋友圈。</p>',
+        weixinQrcodeSize: 100,
 
-        sites: ['weibo', 'qq', 'wechat', 'douban', 'qzone', 'linkedin', 'facebook', 'twitter', 'google'],
+        sites: ['weibo', 'weixin', 'qq', 'facebook', 'twitter'],
         mobileSites: [],
         disabled: [],
         initialized: false
     };
 
     var templates = {
-        qzone: 'http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url={{URL}}&title={{TITLE}}&desc={{DESCRIPTION}}&summary={{SUMMARY}}&site={{SOURCE}}&pics={{IMAGE}}',
         qq: 'http://connect.qq.com/widget/shareqq/index.html?url={{URL}}&title={{TITLE}}&source={{SOURCE}}&desc={{DESCRIPTION}}&pics={{IMAGE}}&summary="{{SUMMARY}}"',
         weibo: 'https://service.weibo.com/share/share.php?url={{URL}}&title={{TITLE}}&pic={{IMAGE}}&appkey={{WEIBOKEY}}',
-        wechat: 'javascript:',
-        douban: 'http://shuo.douban.com/!service/share?href={{URL}}&name={{TITLE}}&text={{DESCRIPTION}}&image={{IMAGE}}&starid=0&aid=0&style=11',
-        linkedin: 'http://www.linkedin.com/shareArticle?mini=true&ro=true&title={{TITLE}}&url={{URL}}&summary={{SUMMARY}}&source={{SOURCE}}&armin=armin',
+        weixin: 'javascript:',
         facebook: 'https://www.facebook.com/sharer/sharer.php?u={{URL}}',
-        twitter: 'https://twitter.com/intent/tweet?text={{TITLE}}&url={{URL}}&via={{ORIGIN}}',
-        google: 'https://plus.google.com/share?url={{URL}}'
+        twitter: 'https://twitter.com/intent/tweet?text={{TITLE}}&url={{URL}}&via={{ORIGIN}}'
     };
 
 
@@ -102,14 +98,14 @@
         var data = mixin({}, defaults, options || {}, dataset(elem));
 
         if (data.imageSelector) {
-            data.image = querySelectorAlls(data.imageSelector).map(function(item) {
+            data.image = querySelectorAlls(data.imageSelector).map(function (item) {
                 return item.src;
             }).join('||');
         }
 
         addClass(elem, 'share-component social-share');
         createIcons(elem, data);
-        createWechat(elem, data);
+        createweixin(elem, data);
 
         elem.initialized = true;
     }
@@ -127,7 +123,7 @@
 
         each(isPrepend ? sites.reverse() : sites, function (name) {
             var url = makeUrl(name, data);
-            var link = data.initialized ? getElementsByClassName(elem, 'icon-' + name) : createElementByString('<a class="social-share-icon icon-' + name + '"></a>');
+            var link = data.initialized ? getElementsByClassName(elem, 'fa-' + name) : createElementByString('<a class="social-share-fa fa-brands fa-' + name + '"></a>');
 
             if (!link.length) {
                 return true;
@@ -135,7 +131,7 @@
 
             link[0].href = url;
 
-            if (name === 'wechat') {
+            if (name === 'weixin') {
                 link[0].tabindex = -1;
             } else {
                 link[0].target = '_blank';
@@ -149,23 +145,23 @@
 
 
     /**
-     * Create the wechat icon and QRCode.
+     * Create the weixin icon and QRCode.
      *
      * @param {Element} elem
      * @param {Object} data
      */
-    function createWechat (elem, data) {
-        var wechat = getElementsByClassName(elem, 'icon-wechat', 'a');
+    function createweixin(elem, data) {
+        var weixin = getElementsByClassName(elem, 'fa-weixin', 'a');
 
-        if (wechat.length === 0) {
+        if (weixin.length === 0) {
             return false;
         }
 
-        var elems = createElementByString('<div class="wechat-qrcode"><h4>' + data.wechatQrcodeTitle + '</h4><div class="qrcode"></div><div class="help">' + data.wechatQrcodeHelper + '</div></div>');
+        var elems = createElementByString('<div class="weixin-qrcode"><h4>' + data.weixinQrcodeTitle + '</h4><div class="qrcode"></div><div class="help">' + data.weixinQrcodeHelper + '</div></div>');
         var qrcode = getElementsByClassName(elems[0], 'qrcode', 'div');
 
-        new QRCode(qrcode[0], {text: data.url, width: data.wechatQrcodeSize, height: data.wechatQrcodeSize});
-        wechat[0].appendChild(elems[0]);
+        new QRCode(qrcode[0], { text: data.url, width: data.weixinQrcodeSize, height: data.weixinQrcodeSize });
+        weixin[0].appendChild(elems[0]);
     }
 
 
@@ -191,8 +187,8 @@
             disabled = disabled.split(/\s*,\s*/);
         }
 
-        if (runningInWeChat) {
-            disabled.push('wechat');
+        if (runningInweixin) {
+            disabled.push('weixin');
         }
 
         // Remove elements
@@ -214,7 +210,7 @@
      */
     function makeUrl(name, data) {
 
-        if (! data['summary']){
+        if (!data['summary']) {
             data['summary'] = data['description'];
         }
 
@@ -249,7 +245,7 @@
     function selector(str) {
         var elems = [];
 
-        each(str.split(/\s*,\s*/), function(s) {
+        each(str.split(/\s*,\s*/), function (s) {
             var m = s.match(/([#.])(\w+)/);
             if (m === null) {
                 throw Error('Supports only simple single #ID or .CLASS selector.');
@@ -475,19 +471,19 @@
      *
      * @link https://github.com/jed/alReady.js
      */
-    function alReady ( fn ) {
+    function alReady(fn) {
         var add = 'addEventListener';
-        var pre = document[ add ] ? '' : 'on';
+        var pre = document[add] ? '' : 'on';
 
-        ~document.readyState.indexOf( 'm' ) ? fn() :
-            'load DOMContentLoaded readystatechange'.replace( /\w+/g, function( type, i ) {
-                ( i ? document : window )
-                    [ pre ? 'attachEvent' : add ]
-                (
-                    pre + type,
-                    function(){ if ( fn ) if ( i < 6 || ~document.readyState.indexOf( 'm' ) ) fn(), fn = 0 },
-                    !1
-                )
+        ~document.readyState.indexOf('m') ? fn() :
+            'load DOMContentLoaded readystatechange'.replace(/\w+/g, function (type, i) {
+                (i ? document : window)
+                [pre ? 'attachEvent' : add]
+                    (
+                        pre + type,
+                        function () { if (fn) if (i < 6 || ~document.readyState.indexOf('m')) fn(), fn = 0 },
+                        !1
+                    )
             })
     }
 })(window, document);
